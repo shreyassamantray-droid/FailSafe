@@ -1,7 +1,7 @@
 import pandas as pd
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, confusion_matrix
 import shap
 import pickle
 
@@ -9,7 +9,7 @@ df = pd.read_csv("student-mat.csv", sep=",")
 
 df["at_risk"] = (df["G3"] < 10).astype(int)
 
-features = ["age", "studytime", "failures", "absences", "G1", "G2", "famrel", "freetime", "goout", "Dalc", "Walc", "health"]
+features = ["age", "studytime", "failures", "absences", "G1", "famrel", "freetime", "goout", "Dalc", "Walc", "health"]
 
 X = df[features]
 y = df["at_risk"]
@@ -21,7 +21,8 @@ model.fit(X_train, y_train)
 
 preds = model.predict(X_test)
 print(f"Accuracy: {accuracy_score(y_test, preds) * 100:.1f}%")
-
+print(f"F1 Score: {f1_score(y_test, preds) * 100:.3f}%")
+print(f"Confusion Matrix:\n{confusion_matrix(y_test, preds)}")
 # SHAP - explain why each student is flagged
 explainer = shap.Explainer(model)
 shap_values = explainer(X_test)

@@ -1,6 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from matplotlib import text
 import pandas as pd
 import pickle
 import io
@@ -28,7 +27,7 @@ with open("model.pkl", "rb") as f:
 with open("explainer.pkl", "rb") as f:
     explainer = pickle.load(f)
 
-REQUIRED_FEATURES = ["age", "studytime", "failures", "absences", "G1", "G2", "famrel", "freetime", "goout", "Dalc", "Walc", "health"]
+REQUIRED_FEATURES = ["age", "studytime", "failures", "absences", "G1", "famrel", "freetime", "goout", "Dalc", "Walc", "health"]
 
 def map_columns(uploaded_columns):
     prompt = f"""
@@ -44,7 +43,8 @@ def map_columns(uploaded_columns):
     """
     response = client.chat.completions(
         messages=[{"role": "user", "content": prompt}],
-        model="sarvam-m"
+        model="sarvam-105b",
+        max_tokens=500
     )
     text = response.choices[0].message.content
     if text.startswith("```"):
@@ -64,7 +64,6 @@ def generate_intervention(student_data, risk_factors):
     - Past failures: {student_data.get('failures')}
     - Absences: {student_data.get('absences')}
     - First term grade: {student_data.get('G1')}/20
-    - Second term grade: {student_data.get('G2')}/20
     - Family relationship quality: {student_data.get('famrel')}/5
     - Weekend alcohol use: {student_data.get('Walc')}/5
     - Daily alcohol use: {student_data.get('Dalc')}/5
@@ -73,17 +72,26 @@ def generate_intervention(student_data, risk_factors):
     Top risk factors driving this prediction:
     {factors_text}
 
-    Write a concise, personalised intervention plan in 2-3 sentences. 
+    Write a personalised intervention plan in exactly 2-3 sentences. 
+    Do not exceed 3 sentences under any circumstances. 
     Be specific and actionable. Address the actual risk factors. 
     Do not use bullet points. Do not start with "This student".
     """
     response = client.chat.completions(
         messages=[{"role": "user", "content": prompt}],
-        model="sarvam-m"
+        model="sarvam-105b"
     )
+    print("Full response:", response)
+    print("Content:", response.choices[0].message.content)
+
     text = response.choices[0].message.content
-    if "<think>" in text:
-        text = text.split("</think>")[-1]
+    if not text:
+        reasoning = response.choices[0].message.reasoning_content
+        lines = [l.strip() for l in reasoning.split('\n') if len(l.strip()) > 100]
+        text = lines[-1] if lines else None
+        
+    if "<tool_call>" in text:
+        text = text.split("<tool_call>")[-1]
     return text.strip()
 
 
