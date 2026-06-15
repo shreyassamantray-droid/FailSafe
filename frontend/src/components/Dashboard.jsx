@@ -10,10 +10,11 @@ function Dashboard() {
   useEffect(() => {
     async function fetchResults() {
       try {
-        const stored = localStorage.getItem('failsafe_results')
-        if (stored) {
-          setStudents(JSON.parse(stored))
-        }
+        const response = await fetch('http://127.0.0.1:8000/results', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        })
+        const data = await response.json()
+        setStudents(data.results)
       } catch {
         console.error('Could not load results')
       } finally {
