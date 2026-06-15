@@ -5,8 +5,9 @@ Failsafe is a web-based tool that helps faculty identify at-risk students early 
 ## Tech Stack
 
 - **ML:** Python, XGBoost, SHAP, scikit-learn, Pandas
-- **Backend:** FastAPI, Uvicorn
+- **Backend:** FastAPI, Uvicorn, SQLite, SQLAlchemy
 - **Frontend:** React, Vite, Recharts
+- **Auth:** JWT
 - **AI:** Sarvam AI (sarvam-105b)
 
 ## How to Run
@@ -50,4 +51,13 @@ npm run dev
 
 ### 7. Open the app
 Go to the localhost link shown by `npm run dev`.
-Upload `student-mat.csv` to get started.
+
+## Test Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Faculty | faculty@failsafe.com | faculty123 |
+| HOD | hod@failsafe.com | hod123 |
+
+Faculty can upload student data and generate interventions.
+HODs can access everything including the dashboard.
